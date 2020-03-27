@@ -1,0 +1,129 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Ad;
+use App\Form\AdType;
+use App\Entity\Image;
+use App\Repository\AdRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+class AdController extends AbstractController
+{
+    /**
+     * @Route("/ads", name="ads_index")
+     */
+    public function index(AdRepository $repo)
+    {
+        // $repo = $this->getDoctrine()->getRepository(Ad::class); ===> si l'on ne faisait pas d'injection de dépendance
+
+        $ads = $repo->findAll();
+
+        return $this->render('ad/index.html.twig', [
+            'ads' => $ads
+        ]);
+    }
+
+    /**
+     * Permet de créer une annonce
+     * 
+     * @Route("/ads/new", name="ads_create")
+     */
+    public function create(Request $request, EntityManagerInterface $manager) {
+        $ad = new Ad();
+
+        $content = "contenu générique de l'annonce, à modifier plus tard. La description devra être détaillée";
+        $ad->setContent($content);
+
+        $form = $this -> createForm(AdType::class, $ad);
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()) {
+            // on va demander au manager de persister chaque image ajoutée de l'annonce
+            foreach($ad->getImages() as $image) {
+                $image->setAD($ad);
+                $manager->persist($image);
+            }
+        
+
+            $manager->persist($ad);
+            $manager->flush();
+
+            $this->addFlash(
+                'success',
+                "L'annonce <strong>{$ad->getTitle()}</strong> a bien été enregistrée !"
+            );
+
+            return $this->redirectToRoute('ads_show', [
+                'slug' => $ad->getSlug()
+            ]);
+
+        }
+
+        return $this->render('ad/new.html.twig', [
+            'form' => $form->createView()
+        ]);
+    }  
+
+    /**
+     * Permet d'afficher le formulaire d'édition
+     * 
+     * @Route("/ads/{slug}/edit", name="ads_edit")
+     */
+    public function edit(Ad $ad, Request $request, EntityManagerInterface $manager) {
+        //$content = "contenu générique de l'annonce, à modifier plus tard. La description devra être détaillée";
+        //$ad->setContent($content);
+
+        $form = $this -> createForm(AdType::class, $ad);
+
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid()) {
+            // on va demander au manager de persister chaque image ajoutée de l'annonce
+            foreach($ad->getImages() as $image) {
+                $image->setAD($ad);
+                $manager->persist($image);
+            }
+        
+            $manager->persist($ad);
+            $manager->flush();
+
+            $this->addFlash(
+                'success',
+                "Les modifications de l'annonce <strong>{$ad->getTitle()}</strong> ont bien été enregistrées !"
+            );
+
+
+            return $this->redirectToRoute('ads_show', [
+                'slug' => $ad->getSlug()
+            ]);
+
+        }
+
+
+        $form->handleRequest($request);        
+        return $this->render('ad/edit.html.twig', [
+            'form' => $form->createView(),
+            'ad' => $ad
+        ]);
+    }
+
+    /**
+     * Permet d'afficher une seule annonce
+     * 
+     * @Route("/ads/{slug}", name="ads_show")
+     */
+    public function show(Ad $ad) // plus besoin de $slug ni AdRepository $repo
+    {   // je récupère l'annonce qui correspond au slug !
+        // $ad = $repo->findOneBySlug($slug); plus besoin du repository car on injecte directement une instance d'annonce $ad
+
+        return $this->render('ad/show.html.twig', [
+            'ad' => $ad
+        ]);
+    }
+}

@@ -142,7 +142,7 @@ class AdController extends AbstractController
      * @Security("is_granted('ROLE_USER') and user == ad.getAuthor()", message="Vous n'avez pas le droit d'accéder à cette ressource")
      * 
      * @param Ad $ad
-     * @param ObjectManager $manager
+     * @param EntityManagerInterface $manager
      * @return Response
      */
     public function delete(Ad $ad, EntityManagerInterface $manager) {

@@ -18,7 +18,7 @@ class ApplicationType extends AbstractType
      * on met la fonction en protected pour les classe qui héritent de ApplicationType puissent utiliser cette fonction
      */
     protected function getConfiguration($label, $placeholder, $options = []) {
-        return array_merge([
+        return array_merge_recursive([ //le récursif permet de ne pas recouvrir les attr de la fonction si elle en a déjà
             'label' => $label,
             'attr' => [
                 'placeholder' => $placeholder

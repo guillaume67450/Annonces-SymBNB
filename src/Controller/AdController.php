@@ -40,9 +40,11 @@ class AdController extends AbstractController
     public function create(Request $request, EntityManagerInterface $manager) {
         $ad = new Ad();
 
+        if(!$ad->getContent()) {
         $content = "contenu générique de l'annonce, à modifier plus tard. La description devra être détaillée";
         $ad->setContent($content);
-
+        }
+        
         $form = $this -> createForm(AdType::class, $ad);
 
         $form->handleRequest($request);

@@ -41,6 +41,7 @@ class BookingType extends ApplicationType
     {
         $resolver->setDefaults([
             'data_class' => Booking::class,
-        ]);
+            'validation_groups' => ['Default', 'front']  // on lui fait passer la validation par défaut et la validation du front
+        ]);     // cela permet d'avoir la vérification de la date d'arrivée' qui ne soit pas antérieure à la date du jour
     }
 }

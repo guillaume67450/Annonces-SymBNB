@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Ad;
 use App\Form\AdType;
 use App\Repository\AdRepository;
+use App\Service\PaginationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -13,14 +14,19 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class AdminAdController extends AbstractController
 {
     /**
-     * @Route("/admin/ads", name="admin_ads_index")
+     * @Route("/admin/ads/{page<\d+>?1}", name="admin_ads_index")
+     * 
+     * on met des inline requirements \d+ (le décimal + indique qu'on peut mettre un nombre et pas seulement un chiffre)
+     * le ? veut dire que c'est optionnel, 1 est la valeur par défaut si pas renseigné
      */
-    public function index(AdRepository $repo)
+    public function index(AdRepository $repo, $page, PaginationService $pagination)
     {
+        $pagination ->setEntityClass(Ad::class)
+                    ->setPage($page);
 
 
         return $this->render('admin/ad/index.html.twig', [
-            'ads' => $repo->findAll()
+            'pagination'=> $pagination
         ]);
     }
 
@@ -77,7 +83,7 @@ class AdminAdController extends AbstractController
             "L'annonce <strong>{$ad->getTitle()}</strong> a bien été supprimée !"
         );
         }
-        
+
         return $this->redirectToRoute('admin_ads_index');
     }
 }
